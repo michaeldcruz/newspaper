@@ -18,12 +18,12 @@ from .settings import cj
 log = logging.getLogger(__name__)
 
 
-def get_request_kwargs(timeout, useragent):
+def get_request_kwargs(timeout, useragent, referrer=None):
     """This Wrapper method exists b/c some values in req_kwargs dict
     are methods which need to be called every time we make a request
     """
     return {
-        'headers': {'User-Agent': useragent},
+        'headers': {'User-Agent': useragent, 'Referrer': referrer},
         'cookies': cj(),
         'timeout': timeout,
         'allow_redirects': True
@@ -41,6 +41,7 @@ def get_html(url, config=None, response=None):
     FAIL_ENCODING = 'ISO-8859-1'
     config = config or Configuration()
     useragent = config.browser_user_agent
+    referrer = config.referrer
     timeout = config.request_timeout
 
     if response is not None:
@@ -52,7 +53,7 @@ def get_html(url, config=None, response=None):
         html = None
 
         response = requests.get(
-            url=url, **get_request_kwargs(timeout, useragent))
+            url=url, **get_request_kwargs(timeout, useragent, referrer))
 
         if response.encoding != FAIL_ENCODING:
             html = response.text
@@ -81,6 +82,7 @@ class MRequest(object):
         self.url = url
         self.config = config
         config = config or Configuration()
+        self.referrer = config.referrer
         self.useragent = config.browser_user_agent
         self.timeout = config.request_timeout
         self.resp = None
@@ -88,7 +90,8 @@ class MRequest(object):
     def send(self):
         try:
             self.resp = requests.get(self.url, **get_request_kwargs(
-                                     self.timeout, self.useragent))
+                                     self.timeout, self.useragent,
+                                     self.referrer))
             if self.config.http_success_only:
                 self.resp.raise_for_status()
         except requests.exceptions.RequestException as e:

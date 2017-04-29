@@ -227,6 +227,8 @@ Here is a full list of the configuration options:
 
 ``browser_user_agent``, default 'newspaper/%s' % __version__
 
+``referrer``, default ''
+
 ``request_timeout``, default 7
 
 ``number_threads``, default 10, "number of threads when mthreading"
